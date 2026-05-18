@@ -15,15 +15,17 @@ def create_app():
 
     # Prefer env var; fallback to a strong random key for local/dev use.
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///inventory.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///inventory.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
     app.jinja_env.filters["inr"] = format_inr
 
-    with app.app_context():
-        db.create_all()
-        seed_db()
+    # Only initialize database on local development, not on Vercel
+    if not os.getenv("VERCEL"):
+        with app.app_context():
+            db.create_all()
+            seed_db()
 
     @app.route("/")
     def index():
