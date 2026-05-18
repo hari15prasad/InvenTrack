@@ -450,8 +450,10 @@ def seed_db():
     db.session.commit()
 
 
+# Create app instance at module level for Vercel
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     with app.app_context():
         db.drop_all()
         db.create_all()
