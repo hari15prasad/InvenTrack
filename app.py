@@ -15,17 +15,28 @@ def create_app():
 
     # Prefer env var; fallback to a strong random key for local/dev use.
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///inventory.db")
+    
+    # Database configuration - use environment variable or default to SQLite
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        # For local development and Vercel (with ephemeral storage)
+        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "inventory.db")
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        db_url = f"sqlite:///{db_path}"
+    
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
     app.jinja_env.filters["inr"] = format_inr
 
-    # Only initialize database on local development, not on Vercel
-    if not os.getenv("VERCEL"):
-        with app.app_context():
+    with app.app_context():
+        try:
             db.create_all()
             seed_db()
+        except Exception as e:
+            # Log error but don't crash app startup
+            print(f"Database initialization warning: {e}")
 
     @app.route("/")
     def index():
