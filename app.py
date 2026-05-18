@@ -16,19 +16,15 @@ def create_app():
     # Prefer env var; fallback to a strong random key for local/dev use.
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
     
-    # Database configuration - prioritize Turso, then env var, then local SQLite
-    turso_url = os.getenv("TURSO_DATABASE_URL")
-    if turso_url:
-        # Convert libsql:// to libsql+driver format for SQLAlchemy
-        db_url = turso_url.replace("libsql://", "sqlite+libsql://")
+    # Database configuration
+    # For Vercel: use /tmp/ directory, for local: use instance/ directory
+    if os.getenv("VERCEL"):
+        db_path = "/tmp/inventory.db"
     else:
-        db_url = os.getenv("DATABASE_URL")
-    
-    if not db_url:
-        # For local development
         db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "inventory.db")
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        db_url = f"sqlite:///{db_path}"
+    
+    db_url = f"sqlite:///{db_path}"
     
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
