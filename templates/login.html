@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In - InvenTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1b222b;
+      --accent: #e3b341;
+      --text: #f2f4f7;
+      --muted: #aab3bc;
+      --outline: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Outfit", "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(135deg, rgba(11, 15, 20, 0.88), rgba(15, 23, 42, 0.8)),
+        url("{{ url_for('static', filename='images/auth-bg.jpg') }}") center/cover no-repeat fixed;
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 32px;
+      width: min(420px, 100%);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--outline);
+      backdrop-filter: blur(6px);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.6rem;
+    }
+
+    .logo-text {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 800;
+      background: linear-gradient(to right, #f59e0b, #fbbf24);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    p {
+      color: var(--muted);
+      margin-top: 0;
+    }
+
+    .flash {
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin: 0 0 14px;
+      font-size: 0.92rem;
+    }
+
+    .flash.error {
+      background: rgba(255, 107, 107, 0.14);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 107, 107, 0.25);
+    }
+
+    .flash.success {
+      background: rgba(109, 214, 165, 0.14);
+      color: #6dd6a5;
+      border: 1px solid rgba(109, 214, 165, 0.25);
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--outline);
+      background: #0f1419;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #1a1f24;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .links {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 class="logo-text">InvenTrack Access</h1>
+    <p>Secure the bag. Manage your inventory without the mid vibes.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('login') }}">
+      <label>
+        User ID (Don't be a stranger)
+        <input type="text" name="username" required>
+      </label>
+      <label>
+        Passcode (Keep it secret, keep it safe)
+        <input type="password" name="password" required>
+      </label>
+      <button type="submit">Let's Get It 🚀</button>
+    </form>
+
+    <div class="links">
+      Need an account? <a href="{{ url_for('register') }}">Register</a>
+    </div>
+  </div>
+</body>
+</html>

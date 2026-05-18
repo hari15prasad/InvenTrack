@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}InvenTrack{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(30, 41, 59, 0.7);
+      --sidebar: #0b1220;
+      --sidebar-accent: #f59e0b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --danger: #ff4b2b;
+      --warning: #ffb75e;
+      --success: #2ecc71;
+      --outline: rgba(255, 255, 255, 0.1);
+      --shadow: 0 20px 40px rgba(2, 6, 23, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
+      background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 55%, #0b1220 100%);
+      color: var(--text);
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+
+    .sidebar {
+      background: linear-gradient(160deg, #0b1220 0%, #0f172a 55%, #1f2937 100%);
+      color: #f2f4f7;
+      padding: 28px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      font-size: 1.4rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .brand span {
+      color: var(--sidebar-accent);
+    }
+
+    .nav {
+      display: grid;
+      gap: 12px;
+    }
+
+    .nav a {
+      color: #f2f4f7;
+      text-decoration: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 160ms ease, background 160ms ease, border 160ms ease;
+    }
+
+    .nav a:hover {
+      transform: translateX(4px);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .main {
+      padding: 32px 36px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--outline);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 420ms ease both;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .muted {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .search-wrap {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .search-wrap input {
+      width: 200px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      transition: all 0.3s ease;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.15);
+    }
+
+    .search-wrap input:focus {
+      outline: none;
+      width: 320px;
+      box-shadow: 0 0 28px rgba(245, 158, 11, 0.35);
+    }
+
+    .button {
+      background: #0f172a;
+      color: #f2f4f7;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.3s ease;
+    }
+
+    .button.secondary {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .button:hover,
+    .button.secondary:hover {
+      transform: scale(1.05);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--outline);
+    }
+
+    .table tbody tr {
+      transition: background 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .table th {
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.75rem;
+    }
+
+    .update-stock-form {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .update-stock-form input {
+      width: 96px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .badge.red {
+      background: rgba(255, 75, 43, 0.18);
+      color: #ffe2dc;
+      box-shadow: 0 0 12px rgba(255, 75, 43, 0.55);
+    }
+
+    .badge.orange {
+      background: rgba(255, 183, 94, 0.2);
+      color: #fff1dc;
+      box-shadow: 0 0 12px rgba(255, 183, 94, 0.4);
+    }
+
+    .badge.green {
+      background: rgba(46, 204, 113, 0.2);
+      color: #d8ffe9;
+      box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 15, 18, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal {
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      animation: dropIn 420ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal h3 {
+      margin-top: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .form-grid label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .form-grid input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--outline);
+      font-size: 0.95rem;
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--text);
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .chart-card {
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid var(--outline);
+      box-shadow: var(--shadow);
+    }
+
+    .chart-card h3 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+    }
+
+    .print-button {
+      background: #0f172a;
+      color: #f2f4f7;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .print-button:hover {
+      transform: scale(1.05);
+    }
+
+    .price-cell {
+      font-weight: 700;
+      color: var(--sidebar-accent);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes dropIn {
+      from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 16mm;
+      }
+
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      .sidebar,
+      .nav,
+      .print-button,
+      .export-button,
+      .search-wrap {
+        display: none !important;
+      }
+
+      .app-shell {
+        display: block;
+      }
+
+      .panel {
+        box-shadow: none;
+        border: none;
+        background: #ffffff;
+        color: #000000;
+      }
+
+      .table th,
+      .table td,
+      .page-title,
+      .muted,
+      .badge {
+        color: #000000 !important;
+      }
+
+      .badge {
+        box-shadow: none;
+        border: 1px solid #000000;
+        background: #ffffff !important;
+      }
+
+      canvas {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+
+      tr {
+        page-break-inside: avoid;
+      }
+
+      .print-only {
+        display: block !important;
+      }
+
+      .print-footer {
+        display: block !important;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .nav {
+        grid-auto-flow: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">Inven<span>Track</span></div>
+      <nav class="nav">
+        <a href="{{ url_for('dashboard') }}"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+        <a href="{{ url_for('reports') }}"><i data-lucide="bar-chart-3"></i>Reports</a>
+        <a href="{{ url_for('profile') }}"><i data-lucide="user"></i>Profile</a>
+        <a href="{{ url_for('logout') }}"><i data-lucide="log-out"></i>Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  {% block scripts %}{% endblock %}
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

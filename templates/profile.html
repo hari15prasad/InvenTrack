@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+  <div class="panel">
+    <style>
+      .flash {
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin: 0 0 14px;
+        font-size: 0.92rem;
+      }
+
+      .flash.error {
+        background: rgba(255, 107, 107, 0.14);
+        color: #ff6b6b;
+        border: 1px solid rgba(255, 107, 107, 0.25);
+      }
+
+      .flash.success {
+        background: rgba(109, 214, 165, 0.14);
+        color: #6dd6a5;
+        border: 1px solid rgba(109, 214, 165, 0.25);
+      }
+
+      .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-top: 12px;
+      }
+
+      .profile-card {
+        background: rgba(15, 23, 42, 0.75);
+        border-radius: 14px;
+        padding: 16px;
+        border: 1px solid var(--outline);
+      }
+
+      .profile-card h3 {
+        margin-top: 0;
+        font-size: 1rem;
+      }
+    </style>
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Profile</h1>
+        <p class="muted">Manage your account details and security settings.</p>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="profile-grid">
+      <div class="profile-card">
+        <h3>Account</h3>
+        <p class="muted">Username</p>
+        <div class="badge green">{{ user.username }}</div>
+        <p class="muted" style="margin-top: 12px;">Role</p>
+        <div class="badge orange">{{ user.role }}</div>
+      </div>
+      <div class="profile-card">
+        <h3>Account Stats</h3>
+        {% if user.role == "admin" %}
+          <p class="muted">Total products</p>
+          <div class="badge green">{{ total_products }}</div>
+          <p class="muted" style="margin-top: 12px;">Viewed sessions</p>
+          <div class="badge orange">{{ viewed_sessions }}</div>
+        {% else %}
+          <p class="muted">Viewed sessions</p>
+          <div class="badge orange">{{ viewed_sessions }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top: 24px;">
+    <div class="page-header">
+      <div>
+        <h2 class="page-title" style="font-size: 1.4rem;">Change Password</h2>
+        <p class="muted">Update your credentials to keep the account secure.</p>
+      </div>
+    </div>
+
+    <form method="post" action="{{ url_for('profile') }}" class="form-grid" style="max-width: 420px;">
+      <label>
+        Current password
+        <input type="password" name="current_password" required>
+      </label>
+      <label>
+        New password
+        <input type="password" name="new_password" required>
+      </label>
+      <label>
+        Confirm new password
+        <input type="password" name="confirm_password" required>
+      </label>
+      <div>
+        <button class="button" type="submit">Save Password</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}

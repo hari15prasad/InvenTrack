@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+
+{% block title %}Inventory Dashboard{% endblock %}
+
+{% block content %}
+  <div class="panel">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Inventory Dashboard</h1>
+        <p class="muted">Monitor stock, pricing, and availability at a glance.</p>
+      </div>
+      <div class="search-wrap">
+        <input type="search" id="inventorySearch" placeholder="Search inventory...">
+      </div>
+      {% if session.get('role') == 'admin' %}
+      <button class="button" type="button" onclick="openModal()">Add Product</button>
+      {% endif %}
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Name</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Update Stock</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr data-product-id="{{ product.id }}">
+          <td>{{ product.sku }}</td>
+          <td>{{ product.name }}</td>
+          <td class="quantity-cell">
+            {% if product.quantity < 5 %}
+              <span class="badge red">{{ product.quantity }} low</span>
+            {% elif product.quantity < 20 %}
+              <span class="badge orange">{{ product.quantity }} watch</span>
+            {% else %}
+              <span class="badge green">{{ product.quantity }} ok</span>
+            {% endif %}
+          </td>
+          <td class="price-cell">₹{{ "{:,.2f}".format(product.price) }}</td>
+          <td>
+            {% if session.get('role') == 'admin' %}
+            <form class="update-stock-form" data-product-id="{{ product.id }}">
+              <input type="number" name="quantity" min="0" value="{{ product.quantity }}" required>
+              <button class="button secondary" type="submit">Update</button>
+            </form>
+            {% else %}
+            <span class="muted">Admin only</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if session.get('role') == 'admin' %}
+            <form method="post" action="{{ url_for('delete_product', id=product.id) }}">
+              <button class="button secondary" type="submit">Delete</button>
+            </form>
+            {% else %}
+            <span class="muted">Admin only</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6">No products found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if session.get('role') == 'admin' %}
+  <div class="modal-backdrop" id="addProductModal" aria-hidden="true">
+    <div class="modal">
+      <h3>Add Product</h3>
+      <form method="post" action="{{ url_for('add_product') }}" class="form-grid">
+        <label>
+          SKU
+          <input type="text" name="sku" required>
+        </label>
+        <label>
+          Name
+          <input type="text" name="name" required>
+        </label>
+        <label>
+          Quantity
+          <input type="number" name="quantity" min="0" value="0" required>
+        </label>
+        <label>
+          Price
+          <input type="number" step="0.01" name="price" min="0" value="0.00" required>
+        </label>
+        <div>
+          <button class="button" type="submit">Save</button>
+          <button class="button secondary" type="button" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    function openModal() {
+      const modal = document.getElementById("addProductModal");
+      modal.style.display = "flex";
+      modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("addProductModal");
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    function getBadgeState(quantity) {
+      if (quantity < 5) {
+        return { className: "red", label: "low" };
+      }
+      if (quantity < 20) {
+        return { className: "orange", label: "watch" };
+      }
+      return { className: "green", label: "ok" };
+    }
+
+    document.querySelectorAll(".update-stock-form").forEach((form) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const input = form.querySelector("input[name='quantity']");
+        const quantity = Number(input.value);
+        if (!Number.isInteger(quantity) || quantity < 0) {
+          alert("Quantity must be a non-negative integer.");
+          return;
+        }
+
+        const productId = form.dataset.productId;
+        const response = await fetch(`/product/update/${productId}`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          body: new FormData(form),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          alert(payload.error || "Unable to update stock.");
+          return;
+        }
+
+        const data = await response.json();
+        const row = document.querySelector(`tr[data-product-id='${data.id}']`);
+        const quantityCell = row.querySelector(".quantity-cell");
+        const badge = getBadgeState(data.quantity);
+        quantityCell.innerHTML = `<span class="badge ${badge.className}">${data.quantity} ${badge.label}</span>`;
+      });
+    });
+
+    const searchInput = document.getElementById("inventorySearch");
+    if (searchInput) {
+      searchInput.addEventListener("input", (event) => {
+        const term = event.target.value.trim().toLowerCase();
+        document.querySelectorAll("tbody tr[data-product-id]").forEach((row) => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(term) ? "" : "none";
+        });
+      });
+    }
+  </script>
+{% endblock %}

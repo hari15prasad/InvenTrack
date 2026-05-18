@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+  <style>
+    :root {
+      --bg: #0f1117;
+      --sidebar-accent: #f5a623;
+      --text: #ffffff;
+    }
+
+    body {
+      background: #0f1117;
+    }
+
+    .sidebar {
+      background: #1a1d2e;
+    }
+
+    .welcome-panel {
+      animation: riseIn 520ms ease both;
+    }
+
+    .welcome-title {
+      font-size: 2rem;
+      margin: 0 0 8px;
+    }
+
+    .welcome-tagline {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .welcome-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .welcome-card {
+      display: grid;
+      gap: 10px;
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid rgba(245, 166, 35, 0.25);
+      background: rgba(15, 17, 23, 0.85);
+      color: var(--text);
+      text-decoration: none;
+      box-shadow: 0 18px 40px rgba(2, 6, 23, 0.45);
+      transition: transform 180ms ease, box-shadow 180ms ease, border 180ms ease;
+      animation: fadeUp 520ms ease both;
+    }
+
+    .welcome-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 20px 50px rgba(245, 166, 35, 0.18);
+      border-color: rgba(245, 166, 35, 0.55);
+    }
+
+    .welcome-card i {
+      width: 28px;
+      height: 28px;
+      color: var(--sidebar-accent);
+    }
+
+    .welcome-card-title {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .welcome-card-desc {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes riseIn {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .welcome-title {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+
+  <div class="panel welcome-panel">
+    <div class="page-header" style="align-items: flex-start; flex-direction: column;">
+      <h1 class="welcome-title">Welcome back, {{ session.get("username") }} 👋</h1>
+      {% if session.get("role") == "admin" %}
+        <p class="welcome-tagline">You're that girl. The inventory won't manage itself bestie 💅</p>
+      {% else %}
+        <p class="welcome-tagline">Clocked in, no cap. Let's check what's bussin in stock 🔥</p>
+      {% endif %}
+    </div>
+
+    <div class="welcome-grid">
+      <a class="welcome-card" href="{{ url_for('dashboard') }}">
+        <i data-lucide="layout-dashboard"></i>
+        <h2 class="welcome-card-title">Go to Dashboard</h2>
+        <p class="welcome-card-desc">Review live stock levels and update quantities fast.</p>
+      </a>
+      <a class="welcome-card" href="{{ url_for('reports') }}">
+        <i data-lucide="bar-chart-3"></i>
+        <h2 class="welcome-card-title">View Reports</h2>
+        <p class="welcome-card-desc">Dive into valuation and category health insights.</p>
+      </a>
+    </div>
+  </div>
+{% endblock %}
